@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Careem Food | AI Decision Brief Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --careem-green: #00e676;
+      --careem-green-dark: #00b050;
+      --careem-green-glow: rgba(0, 230, 118, 0.15);
+      --bg-dark: #0a0e17;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --card-border-hover: #374151;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --accent-red: #f43f5e;
+      --accent-red-glow: rgba(244, 63, 94, 0.15);
+      --accent-amber: #f59e0b;
+      --accent-blue: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    /* Top Nav */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #00e676, #00b050);
+      color: #062412;
+      font-weight: 800;
+      font-size: 20px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .status-pill {
+      background: rgba(0, 230, 118, 0.1);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      color: var(--careem-green);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--careem-green);
+      box-shadow: 0 0 8px var(--careem-green);
+    }
+
+    /* Filters / Control Bar */
+    .control-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .select-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .select-wrap label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    select, .btn-primary {
+      background: #1a2234;
+      border: 1px solid #2d3748;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00e676, #00b050);
+      color: #062412;
+      font-weight: 700;
+      border: none;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 230, 118, 0.3);
+    }
+
+    /* Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card.alert {
+      border-color: var(--accent-red);
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.05) 0%, var(--card-bg) 100%);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .metric-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .metric-delta {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .delta-danger {
+      background: var(--accent-red-glow);
+      color: var(--accent-red);
+    }
+
+    .delta-success {
+      background: var(--careem-green-glow);
+      color: var(--careem-green);
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Main Grid */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+    }
+
+    .panel-header h2 {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-soft {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Funnel Bars */
+    .funnel-step {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .funnel-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .funnel-label-row .val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #cbd5e1;
+    }
+
+    .funnel-bar-bg {
+      height: 10px;
+      background: #1f2937;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .funnel-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #00e676);
+      transition: width 0.4s ease;
+    }
+
+    .funnel-bar-fill.drop {
+      background: linear-gradient(90deg, #f59e0b, #f43f5e);
+    }
+
+    /* Decision Brief Viewer */
+    .brief-container {
+      background: #0d131f;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 520px;
+      font-size: 13.5px;
+    }
+
+    .brief-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #00e676;
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .brief-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brief-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 16px 0 8px 0;
+    }
+
+    .brief-p {
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .action-box {
+      background: #131b2e;
+      border-left: 3px solid #00e676;
+      padding: 12px 14px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 12px;
+    }
+
+    .action-box.amber {
+      border-left-color: #f59e0b;
+    }
+
+    .action-box.blue {
+      border-left-color: #38bdf8;
+    }
+
+    .action-box strong {
+      display: block;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .action-box p {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: #1f2937;
+      color: #00e676;
+    }
+
+    .code-view {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: #0d131f;
+      color: #a5b4fc;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo-badge">careem</div>
+      <div class="brand-text">
+        <h1>AI Decision Brief Generator</h1>
+        <p>Operational Telemetry & Funnel Synthesis Engine | UAE Food Delivery</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-pill">Telemetric Feed Active</div>
+      <button class="btn-primary" onclick="triggerRegen()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
+        Re-generate Brief
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter & Parameter Bar -->
+  <div class="control-bar">
+    <div class="control-group">
+      <div class="select-wrap">
+        <label>Operational Cluster</label>
+        <select id="zoneSelect">
+          <option selected>Downtown Dubai (Incident Zone)</option>
+          <option>Dubai Marina</option>
+          <option>Business Bay</option>
+          <option>JLT (Jumeirah Lakes Towers)</option>
+          <option>Deira</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <label>Time Window</label>
+        <select id="windowSelect">
+          <option selected>Fri 2026-09-04 19:00 - 21:00 (Dinner Peak)</option>
+          <option>Fri 2026-09-04 12:00 - 14:00 (Lunch Peak)</option>
+          <option>Sat 2026-09-05 19:00 - 21:00 (Dinner Peak)</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <label>Synthesis Model</label>
+        <select>
+          <option>Claude 3.5 Sonnet (PM Guardrail v2)</option>
+          <option>GPT-4o Growth Engine</option>
+          <option>Gemini 1.5 Pro</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <span class="badge-soft">Anomaly Trigger: Z-Score &gt; 2.8 on Kitchen Prep</span>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-header">
+        <span class="metric-title">Active Sessions</span>
+        <span class="metric-delta delta-success">+18.4%</span>
+      </div>
+      <div class="metric-value">25,296</div>
+      <div class="metric-sub">vs Baseline: 21,360</div>
+    </div>
+
+    <div class="metric-card alert">
+      <div class="metric-header">
+        <span class="metric-title">Funnel Conversion Rate</span>
+        <span class="metric-delta delta-danger">-9.08 pts</span>
+      </div>
+      <div class="metric-value">4.62%</div>
+      <div class="metric-sub">Baseline: 13.70% (Severe Drop)</div>
+    </div>
+
+    <div class="metric-card alert">
+      <div class="metric-header">
+        <span class="metric-title">Kitchen Prep Delay</span>
+        <span class="metric-delta delta-danger">+18.9 min</span>
+      </div>
+      <div class="metric-value">39.8 min</div>
+      <div class="metric-sub">Baseline: 20.9 min (ETA: 64.2 min)</div>
+    </div>
+
+    <div class="metric-card alert">
+      <div class="metric-header">
+        <span class="metric-title">Net Take Rate</span>
+        <span class="metric-delta delta-danger">-6.68 pts</span>
+      </div>
+      <div class="metric-value">10.82%</div>
+      <div class="metric-sub">Baseline: 17.50% (Promo Cannibalization)</div>
+    </div>
+  </div>
+
+  <!-- Dashboard Main Section -->
+  <div class="dashboard-layout">
+    <!-- Left: Telemetry & Funnel Visualizer -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>
+          <span>Funnel Telemetry &amp; Bottlenecks</span>
+        </h2>
+        <span class="badge-soft">Peak vs Baseline</span>
+      </div>
+
+      <div>
+        <!-- Funnel Step 1 -->
+        <div class="funnel-step">
+          <div class="funnel-label-row">
+            <span>1. Session &gt; Menu View</span>
+            <span class="val">54.8% (Normal)</span>
+          </div>
+          <div class="funnel-bar-bg">
+            <div class="funnel-bar-fill" style="width: 55%;"></div>
+          </div>
+        </div>
+
+        <!-- Funnel Step 2: Severe Drop -->
+        <div class="funnel-step">
+          <div class="funnel-label-row">
+            <span>2. Menu View &gt; Cart Add (Friction Spike)</span>
+            <span class="val" style="color: var(--accent-red);">26.1% (-14.8 pts)</span>
+          </div>
+          <div class="funnel-bar-bg">
+            <div class="funnel-bar-fill drop" style="width: 26%;"></div>
+          </div>
+        </div>
+
+        <!-- Funnel Step 3: Checkout Drop -->
+        <div class="funnel-step">
+          <div class="funnel-label-row">
+            <span>3. Cart &gt; Checkout Start</span>
+            <span class="val" style="color: var(--accent-red);">51.4% (-20.7 pts)</span>
+          </div>
+          <div class="funnel-bar-bg">
+            <div class="funnel-bar-fill drop" style="width: 51%;"></div>
+          </div>
+        </div>
+
+        <!-- Funnel Step 4: Completion -->
+        <div class="funnel-step">
+          <div class="funnel-label-row">
+            <span>4. Checkout &gt; Order Completed</span>
+            <span class="val" style="color: var(--accent-amber);">64.8% (-21.3 pts)</span>
+          </div>
+          <div class="funnel-bar-bg">
+            <div class="funnel-bar-fill drop" style="width: 65%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--card-border); padding-top: 16px;">
+        <h3 style="font-size: 13px; font-weight: 700; color: #cbd5e1; margin-bottom: 10px;">OPERATIONAL HEALTH METRICS</h3>
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+          <tr style="color: var(--text-muted); border-bottom: 1px solid #1f2937;">
+            <th style="text-align: left; padding: 6px 0;">Metric</th>
+            <th style="text-align: right; padding: 6px 0;">Target Peak</th>
+            <th style="text-align: right; padding: 6px 0;">Baseline</th>
+            <th style="text-align: right; padding: 6px 0;">Variance</th>
+          </tr>
+          <tr style="border-bottom: 1px solid #1f2937;">
+            <td style="padding: 6px 0;">Total Completed Orders</td>
+            <td style="text-align: right; font-weight: 600;">1,168</td>
+            <td style="text-align: right; color: var(--text-muted);">2,926</td>
+            <td style="text-align: right; color: var(--accent-red); font-weight: 700;">-60.1%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #1f2937;">
+            <td style="padding: 6px 0;">Average Delivery ETA</td>
+            <td style="text-align: right; font-weight: 600;">64.2 min</td>
+            <td style="text-align: right; color: var(--text-muted);">36.8 min</td>
+            <td style="text-align: right; color: var(--accent-red); font-weight: 700;">+27.4 min</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #1f2937;">
+            <td style="padding: 6px 0;">Driver Supply Gap Index</td>
+            <td style="text-align: right; font-weight: 600;">24.6%</td>
+            <td style="text-align: right; color: var(--text-muted);">6.4%</td>
+            <td style="text-align: right; color: var(--accent-red); font-weight: 700;">+18.2 pts</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0;">Promo Spend Share of GMV</td>
+            <td style="text-align: right; font-weight: 600;">36.1%</td>
+            <td style="text-align: right; color: var(--text-muted);">9.6%</td>
+            <td style="text-align: right; color: var(--accent-red); font-weight: 700;">+26.5 pts</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: AI Executive Decision Brief Output -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchTab('brief')">Executive Decision Brief</button>
+          <button class="tab-btn" onclick="switchTab('prompt')">Prompt &amp; Guardrails</button>
+          <button class="tab-btn" onclick="switchTab('json')">JSON Telemetry</button>
+        </div>
+        <span class="badge-soft" style="background: rgba(0, 230, 118, 0.1); color: var(--careem-green); border-color: rgba(0,230,118,0.2);">AI Synthesized</span>
+      </div>
+
+      <div id="tab-brief" class="brief-container">
+        <div class="brief-title">EXECUTIVE DECISION BRIEF: CAREEM FOOD (DOWNTOWN DUBAI)</div>
+        <div class="brief-meta">
+          <strong>Incident Window:</strong> 2026-09-04 19:00 - 22:00 (Friday Peak) | <strong>Owner:</strong> Growth &amp; Product Lead, Careem UAE
+        </div>
+
+        <div class="brief-section-title">1. Executive Summary</div>
+        <p class="brief-p">
+          During the Friday dinner peak in Downtown Dubai, completed orders dropped <strong>60.1% below baseline</strong> (1,168 vs 2,926 orders) despite a healthy 18.4% increase in user traffic (25,296 sessions). The end-to-end conversion rate collapsed from 13.70% to 4.62%, yielding an estimated <strong>AED 145,200 in lost GMV</strong>. A severe merchant kitchen bottleneck cascaded into inflated delivery ETAs (64.2 min), driving steep cart abandonment, while unconstrained discount vouchers severely cannibalized margin.
+        </p>
+
+        <div class="brief-section-title">2. Root Cause Attribution</div>
+        <p class="brief-p">
+          <strong>1. Merchant Prep Latency Triggered Funnel Drop:</strong> Kitchen prep time spiked +18.9 mins to 39.8 mins. When customer-facing ETAs crossed 60 mins, Menu-to-Cart dropped -14.8 pts and Cart-to-Checkout fell -20.7 pts.<br>
+          <strong>2. Captain Fleet Stagnation:</strong> Driver supply gap climbed to 24.6% (+18.2 pts). Captains spent 14+ minutes waiting at congested restaurant hubs, paralyzing delivery throughput.<br>
+          <strong>3. Voucher Cannibalization &amp; Margin Erosion:</strong> Promo spend consumed 36.1% of GMV (vs 9.6% baseline), while average basket size fell to AED 52.80. Net take rate collapsed from 17.50% to 10.82%.
+        </p>
+
+        <div class="brief-section-title">3. Prioritized Business Actions</div>
+        
+        <div class="action-box">
+          <strong>Action A (Ops): Dynamic Kitchen Throttling &amp; Radius Compression (Immediate 24-48h)</strong>
+          <p>Enforce automatic delivery radius throttling (compress 7 km to 3.5 km) for merchants with rolling prep times &gt;30 mins. Shift standby Captains from Business Bay with AED 4 peak drop-off bonuses.</p>
+        </div>
+
+        <div class="action-box amber">
+          <strong>Action B (Commercial): Recalibrate Promo Basket Guardrails (Commercial Next Cycle)</strong>
+          <p>Increase minimum order value on peak vouchers from AED 40 to AED 75. Discontinue flat discounts during 19:00-22:00 to eliminate margin-diluting small orders and restore take rate &gt;16.0%.</p>
+        </div>
+
+        <div class="action-box blue">
+          <strong>Action C (Product): ETA Transparency &amp; Demand Smoothing Incentives (Product Sprint 1)</strong>
+          <p>Roll out a 'Fastest Delivery' smart filter badge and test an in-app nudge offering 50 Careem Plus reward points for orders scheduled +30 min post-peak, shifting 12-15% of peak load.</p>
+        </div>
+
+        <div class="brief-section-title">4. Guardrail Metrics &amp; Expected Recovery</div>
+        <p class="brief-p">
+          - <strong>Target CVR:</strong> Recover End-to-End conversion to &gt;= 12.5% within 14 days.<br>
+          - <strong>Operational SLA:</strong> Keep Downtown kitchen prep time &lt; 24 mins and ETA &lt; 40 mins.<br>
+          - <strong>Financial Floor:</strong> Maintain Net Take Rate &gt;= 16.5% and protect positive contribution margin across all voucher-applied orders.
+        </p>
+      </div>
+
+      <div id="tab-prompt" class="brief-container" style="display: none;">
+        <div class="code-view">=== CAREEM PM AI DECISION BRIEF PROMPT ===
+SYSTEM: You are the Growth Product Manager for Careem Food in the UAE.
+You are preparing the Weekly Business Review (WBR) for executive leadership.
+Turn the following raw funnel telemetry and operational anomaly signals into a structured Executive Decision Brief.
+
+INPUT VARIABLES:
+- Zone: Downtown Dubai
+- Target Window: 2026-09-04 19:00 - 22:00 (Dinner Peak)
+- Sessions: 25,296 (+18.4% vs baseline 21,360)
+- Conversion: 4.62% (-9.08 pts vs baseline 13.70%)
+- Kitchen Prep Time: 39.8 mins (+18.9 mins vs baseline 20.9 mins)
+- Average ETA: 64.2 mins (+27.4 mins vs baseline 36.8 mins)
+- Driver Supply Gap: 24.6% (+18.2 pts vs baseline 6.4%)
+- Promo Spend / GMV: 36.1% (+26.5 pts vs baseline 9.6%)
+- Net Take Rate: 10.82% (-6.68 pts vs baseline 17.50%)
+
+GUARDRAILS &amp; STRUCTURE:
+1. Executive Summary: Succinct Plan-vs-Actuals impact and lost GMV.
+2. Root Cause Attribution: Deconstruct Ops bottlenecks vs Commercial pricing.
+3. 3 Prioritized Actions:
+   - Action A (Operational): Immediate dispatch or throttling lever.
+   - Action B (Commercial): Pricing / promo guardrail lever.
+   - Action C (Product/Growth): Algorithmic ranking or in-app friction fix.
+4. Guardrail Metrics: SLAs on delivery time, take rate, and conversion recovery.</div>
+      </div>
+
+      <div id="tab-json" class="brief-container" style="display: none;">
+        <div class="code-view">{
+  "zone": "Downtown Dubai",
+  "incident_window": "2026-09-04 19:00 - 22:00",
+  "anomaly_detected": true,
+  "z_scores": {
+    "kitchen_prep_time": 3.42,
+    "cart_abandonment": 2.89,
+    "promo_intensity": 3.15
+  },
+  "metrics": {
+    "sessions": 25296,
+    "orders_completed": 1168,
+    "conversion_rate_pct": 4.62,
+    "baseline_conversion_rate_pct": 13.70,
+    "avg_delivery_time_min": 64.2,
+    "kitchen_prep_time_min": 39.8,
+    "driver_supply_gap_pct": 24.6,
+    "gmv_aed": 61670.40,
+    "promo_spend_aed": 22260.00,
+    "net_take_rate_pct": 10.82
+  }
+}</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab-brief').style.display = 'none';
+    document.getElementById('tab-prompt').style.display = 'none';
+    document.getElementById('tab-json').style.display = 'none';
+
+    if (tabName === 'brief') {
+      document.getElementById('tab-brief').style.display = 'block';
+      event.target.classList.add('active');
+    } else if (tabName === 'prompt') {
+      document.getElementById('tab-prompt').style.display = 'block';
+      event.target.classList.add('active');
+    } else if (tabName === 'json') {
+      document.getElementById('tab-json').style.display = 'block';
+      event.target.classList.add('active');
+    }
+  }
+
+  function triggerRegen() {
+    const brief = document.getElementById('tab-brief');
+    brief.style.opacity = '0.5';
+    setTimeout(() => {
+      brief.style.opacity = '1';
+    }, 300);
+  }
+</script>
+
+</body>
+</html>
